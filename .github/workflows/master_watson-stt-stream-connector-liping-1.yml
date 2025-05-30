@@ -39,7 +39,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    
+    permissions:
+      contents: read
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -48,7 +50,7 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -57,10 +59,9 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_40EBDA9E2E7748FBB4EB44D0D0BA08DC }}
 
       - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'watson-stt-stream-connector-liping-1'
           slot-name: 'Production'
           package: .
-          startup-command: 'node --require ./otel.js ./app.js | pino'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_77514344774449C488CCC1A0A0B22264 }}

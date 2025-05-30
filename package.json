@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./app.js | pino",
-    "start": "node --require ./otel.js ./app.js | pino",
+    "dev": "nodemon ./app.js",
+    "start": "node --require ./otel.js ./app.js",
     "lint": "eslint .",
     "test": "eslint . && LOG_LEVEL=error mocha test/"
   },

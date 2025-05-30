@@ -23,9 +23,11 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: npm install
+      - name: npm install, build, and test
         run: |
           npm install
+          npm run build --if-present
+          npm run test --if-present
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -39,9 +41,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    permissions:
-      contents: read
-
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -50,14 +53,7 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D34FD00ABAC74C7DBF33DB1C9D030A9F }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_75F75A4CC53B4CD6925057BE9A31ABB6 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_40EBDA9E2E7748FBB4EB44D0D0BA08DC }}
-          
+      
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -65,4 +61,4 @@ jobs:
           app-name: 'watson-stt-stream-connector-liping-1'
           slot-name: 'Production'
           package: .
-          startup-command: 'node --require ./otel.js ./app.js | pino'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_77514344774449C488CCC1A0A0B22264 }}

@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon ./app.js",
-    "start": "pm2 start ./app.js --no-daemon",
-    "test": "LOG_LEVEL=error mocha test/"
+    "start": "pm2 start ./app.js --no-daemon"
   },
   "author": "",
   "license": "SEE LICENSE IN LICENSE",

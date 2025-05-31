@@ -61,4 +61,4 @@ jobs:
           app-name: 'watson-stt-stream-connector-lp-1'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_ABA97C640B334E59AED72D4C3527E49B }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E48A146BE5AD4DF9AA9814B1BCBBC8CA }}

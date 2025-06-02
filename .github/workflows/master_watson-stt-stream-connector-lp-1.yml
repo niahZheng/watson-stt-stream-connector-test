@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -22,30 +22,21 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
-          cache: 'npm' # 启用 npm 缓存
 
-      - name: npm install and build
+      - name: npm install, build, and test
         run: |
-          npm ci # 使用 ci 而不是 install，更快且确定性更强
-          npm install pm2 -g
+          npm install
+          npm run build --if-present
+          npm run test --if-present
 
-      # 只打包必要文件
-      - name: Create deployment package
-        run: |
-          zip release.zip \
-            ./app.js \
-            ./ecosystem.config.js \
-            ./package.json \
-            ./package-lock.json \
-            ./lib/** \
-            -r
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
           path: release.zip
-          retention-days: 1 # 减少存储时间
 
   deploy:
     runs-on: ubuntu-latest
@@ -53,7 +44,10 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -63,6 +57,13 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
       
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_50876CA3FFE846BF8DE3539C535E4931 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_602AC8C782834835B69A3D5B8D4F62E4 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F361B255CC4F4DB2A201CC2C560707AB }}
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -70,4 +71,4 @@ jobs:
           app-name: 'watson-stt-stream-connector-lp-1'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_84C56E17DE61459BA5356B9B7AAC9C56 }}
+          

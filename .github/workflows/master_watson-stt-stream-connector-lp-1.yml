@@ -71,4 +71,5 @@ jobs:
           app-name: 'watson-stt-stream-connector-lp-1'
           slot-name: 'Production'
           package: .
+          startup-command: 'npm install'
           

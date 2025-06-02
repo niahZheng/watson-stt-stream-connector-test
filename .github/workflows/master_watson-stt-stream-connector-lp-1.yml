@@ -25,7 +25,7 @@ jobs:
           npm install
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: node-app
           path: .
@@ -51,6 +51,3 @@ jobs:
           slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_84C56E17DE61459BA5356B9B7AAC9C56 }}
-          # 添加重试机制
-          max-retries: 3
-          retry-wait-time: 10000

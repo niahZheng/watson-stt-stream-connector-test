@@ -1,8 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - genesys-connector-2
+name: Build and deploy Node.js app to Azure Web App - watson-stt-stream-connector-lp-1
 
 on:
   push:
@@ -14,36 +13,39 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.12'
+          node-version: '20.x'
+          cache: 'npm' # 启用 npm 缓存
 
-      - name: Create and start virtual environment
+      - name: npm install and build
         run: |
-          python -m venv venv
-          source venv/bin/activate
-      
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+          npm ci # 使用 ci 而不是 install，更快且确定性更强
+          npm install pm2 -g
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+      # 只打包必要文件
+      - name: Create deployment package
+        run: |
+          zip release.zip \
+            ./app.js \
+            ./ecosystem.config.js \
+            ./package.json \
+            ./package-lock.json \
+            ./lib/** \
+            -r
 
-      - name: Upload artifact for deployment jobs
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: python-app
-          path: |
-            release.zip
-            !venv/
+          name: node-app
+          path: release.zip
+          retention-days: 1 # 减少存储时间
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,16 +58,16 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: python-app
+          name: node-app
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
       
       - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
         with:
-          app-name: 'genesys-connector-2'
+          app-name: 'watson-stt-stream-connector-lp-1'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F64AC58B4B4430ABA76B8AF9C99B615 }}
+          package: .
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E48A146BE5AD4DF9AA9814B1BCBBC8CA }}

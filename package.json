@@ -20,6 +20,7 @@
     "celery-node": "^0.5.9",
     "config": "^1.29.2",
     "dotenv": "^16.4.5",
+    "express": "^5.1.0",
     "ibm-watson": "^5.4.0",
     "mqtt": "^5.3.3",
     "pino": "^4.10.2",
